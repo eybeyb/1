@@ -114,7 +114,6 @@ String goods=null;
 
                 s=et.getText();
 
-
             }
 
             @Override

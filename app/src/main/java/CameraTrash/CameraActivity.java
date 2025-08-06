@@ -1,5 +1,5 @@
 package CameraTrash;
-
+import org.json.JSONObject;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.thundersoft.trash.Model.TrashResponse;
@@ -38,12 +40,17 @@ public class CameraActivity extends AppCompatActivity {
     private ImageView imageView;
     private File currentPhotoFile; // 保存当前照片文件引用
     private ExecutorService executorService;
+    RecyclerView recyclerView3;
+    private SearchGoodsAdapter adapter;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         imageView = findViewById(R.id.imageView);
         bt = findViewById(R.id.button3);
+        recyclerView3=findViewById(R.id.recyclerView3);
+        recyclerView3.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new SearchGoodsAdapter();
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -124,22 +131,25 @@ public class CameraActivity extends AppCompatActivity {
                 try {
                     // 使用实际的照片文件路径调用百度AI识别
                     String result = connectnetwork.cn(currentPhotoFile.getAbsolutePath());
-                    Log.d("CameraActivity", "百度AI识别结果: " + result);
+                    Log.d("百度AI结果", "百度AI结果: " + result);
 
                     // 解析百度AI识别结果
                     if (result != null) {
                         PhotoResponse photoResponse = new Gson().fromJson(result, PhotoResponse.class);
-                        if (photoResponse.getLogid() != null &&
-                                photoResponse.getResult() != null &&
-                                !photoResponse.getResult().isEmpty()) {
-
+//                        if (photoResponse.getLogid() != null &&
+//                                photoResponse.getResult() != null &&
+//                                !photoResponse.getResult().isEmpty()) {
+if(true==true){
                             // 获取识别到的第一个关键词
-                            String keyword = photoResponse.getResult().get(0).getKeyword();
-                            Log.d("CameraActivity", "识别关键词: " + keyword);
+                            String keyword = photoResponse.getResult().get(4).getKeyword();
+                            Log.d("关键词", "识别关键词: " + keyword);
+
 
                             // 在主线程中显示识别结果
                             runOnUiThread(() -> {
+
                                 Toast.makeText(CameraActivity.this, "识别到: " + keyword, Toast.LENGTH_SHORT).show();
+                                queryTrashClassification(keyword);
                             });
 
                             // 调用天行API查询垃圾分类信息
@@ -190,10 +200,12 @@ public class CameraActivity extends AppCompatActivity {
                         if (trashResponse.getCode() == 200 && trashResponse.getResult() != null) {
                             // 显示垃圾分类结果
                             runOnUiThread(() -> {
-                                String resultMsg = "垃圾名称: " + trashResponse.getResult().getList().get(0).getName() + "\n" +
-                                        "分类: " + trashResponse.getResult().getList().get(0).getCategory() + "\n" +
-                                        "解释: " + trashResponse.getResult().getList().get(0).getExplain();
-                                Toast.makeText(CameraActivity.this, resultMsg, Toast.LENGTH_LONG).show();
+//                                String resultMsg = "垃圾名称: " + trashResponse.getResult().getList().get(0).getName() + "\n" +
+//                                        "分类: " + trashResponse.getResult().getList().get(0).getCategory() + "\n" +
+//                                        "解释: " + trashResponse.getResult().getList().get(0).getExplain();
+//                                Toast.makeText(CameraActivity.this, resultMsg, Toast.LENGTH_LONG).show();
+                                adapter.setDataList(trashResponse.getResult().getList());
+                                recyclerView3.setAdapter(adapter);
                             });
                         } else {
                             runOnUiThread(() -> {
