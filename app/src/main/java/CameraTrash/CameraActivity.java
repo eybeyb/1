@@ -26,7 +26,9 @@ import com.thundersoft.trash.adapter.SearchGoodsAdapter;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,7 +38,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class CameraActivity extends AppCompatActivity {
-    private Button bt;
+    private Button bt,bt4;
     private ImageView imageView;
     private File currentPhotoFile; // 保存当前照片文件引用
     private ExecutorService executorService;
@@ -48,6 +50,7 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
         imageView = findViewById(R.id.imageView);
         bt = findViewById(R.id.button3);
+        bt4=findViewById(R.id.button4);
         recyclerView3=findViewById(R.id.recyclerView3);
         recyclerView3.setLayoutManager(new LinearLayoutManager(this));
         adapter = new SearchGoodsAdapter();
@@ -60,6 +63,14 @@ public class CameraActivity extends AppCompatActivity {
                 dispatchTakePictureIntent();
             }
         });
+        bt4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TransferPhoto();
+
+            }
+        });
+
     }
 
     /**
@@ -109,18 +120,51 @@ public class CameraActivity extends AppCompatActivity {
                 imageView.setImageURI(Uri.fromFile(currentPhotoFile));
                 imageView.setVisibility(View.VISIBLE);
                 Toast.makeText(this, "图片已保存", Toast.LENGTH_SHORT).show();
-
                 // 在后台线程中执行图像识别
                 performImageRecognition();
             } else {
                 Toast.makeText(this, "照片文件不存在", Toast.LENGTH_SHORT).show();
             }
-        } else if (resultCode == RESULT_CANCELED) {
+        }
+        else if (requestCode == 2 && resultCode == RESULT_OK) {
+            // 拍照成功，显示照片
+            if (data != null && data.getData() != null) {
+                try {
+                    // 创建临时文件用于存储选中的图片
+                    File selectedImageFile = createImageFile();
+
+                    // 将选中的图片复制到临时文件
+                try   (InputStream inputStream = getContentResolver().openInputStream(data.getData());
+                    FileOutputStream outputStream = new FileOutputStream(selectedImageFile)) {
+
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = inputStream.read(buffer)) > 0) {
+                        outputStream.write(buffer, 0, length);
+                    }
+                }
+                    // 设置当前文件引用为选中的图片文件
+                    currentPhotoFile = selectedImageFile;
+                    // 显示照片
+                    imageView.setImageURI(null);
+                    imageView.setImageURI(Uri.fromFile(selectedImageFile));
+                    imageView.setVisibility(View.VISIBLE);
+                    Toast.makeText(this, "上传图片成功", Toast.LENGTH_SHORT).show();
+
+                    // 执行图像识别
+                    performImageRecognition();
+                } catch (IOException e) {
+                    Toast.makeText(this, "处理图片失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if (resultCode == RESULT_CANCELED) {
             // 用户取消拍照
-            Toast.makeText(this, "拍照已取消", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "操作已取消", Toast.LENGTH_SHORT).show();
         } else {
-            // 拍照失败
-            Toast.makeText(this, "拍照失败", Toast.LENGTH_SHORT).show();
+            // 操作失败
+            Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -135,31 +179,28 @@ public class CameraActivity extends AppCompatActivity {
 
                     // 解析百度AI识别结果
                     if (result != null) {
+
                         PhotoResponse photoResponse = new Gson().fromJson(result, PhotoResponse.class);
-//                        if (photoResponse.getLogid() != null &&
-//                                photoResponse.getResult() != null &&
-//                                !photoResponse.getResult().isEmpty()) {
-if(true==true){
+                      if(photoResponse != null &&
+                              photoResponse.getResult() != null &&
+                              !photoResponse.getResult().isEmpty() &&
+                              photoResponse.getResult().get(0) != null){
                             // 获取识别到的第一个关键词
-                            String keyword = photoResponse.getResult().get(4).getKeyword();
+                            String keyword = photoResponse.getResult().get(0).getKeyword();
                             Log.d("关键词", "识别关键词: " + keyword);
-
-
                             // 在主线程中显示识别结果
                             runOnUiThread(() -> {
-
-                                Toast.makeText(CameraActivity.this, "识别到: " + keyword, Toast.LENGTH_SHORT).show();
+                                // 调用天行API查询垃圾分类信息
                                 queryTrashClassification(keyword);
+                                Toast.makeText(CameraActivity.this, "识别到: " + keyword, Toast.LENGTH_SHORT).show();
                             });
-
-                            // 调用天行API查询垃圾分类信息
-                            queryTrashClassification(keyword);
-                        } else {
-                            runOnUiThread(() -> {
-                                Toast.makeText(CameraActivity.this, "未能识别图片内容", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    } else {
+                    }
+                    else{
+                        runOnUiThread(() -> {
+                            Toast.makeText(CameraActivity.this, "未能识别图片内容,数据为空", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                    }else {
                         runOnUiThread(() -> {
                             Toast.makeText(CameraActivity.this, "图像识别失败", Toast.LENGTH_SHORT).show();
                         });
@@ -198,6 +239,7 @@ if(true==true){
 
                         TrashResponse trashResponse = new Gson().fromJson(responseData, TrashResponse.class);
                         if (trashResponse.getCode() == 200 && trashResponse.getResult() != null) {
+                            if(!trashResponse.getResult().getList().isEmpty()){
                             // 显示垃圾分类结果
                             runOnUiThread(() -> {
 //                                String resultMsg = "垃圾名称: " + trashResponse.getResult().getList().get(0).getName() + "\n" +
@@ -207,7 +249,12 @@ if(true==true){
                                 adapter.setDataList(trashResponse.getResult().getList());
                                 recyclerView3.setAdapter(adapter);
                             });
-                        } else {
+                        }
+                        else  {
+                            runOnUiThread(() -> {
+                                Toast.makeText(CameraActivity.this, "未找到相关垃圾分类信息,数据为空", Toast.LENGTH_SHORT).show();
+                            });
+                            }}else {
                             runOnUiThread(() -> {
                                 Toast.makeText(CameraActivity.this, "未找到相关垃圾分类信息", Toast.LENGTH_SHORT).show();
                             });
@@ -245,5 +292,31 @@ if(true==true){
         if (executorService != null) {
             executorService.shutdown();
         }
+    }
+    public void TransferPhoto(){
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        File photoFile = null;
+        try {
+            // 创建用于存储照片的文件
+            photoFile = createImageFile();
+            currentPhotoFile = photoFile; // 保存文件引用
+        } catch (IOException ex) {
+            // 处理异常
+            Toast.makeText(this, "创建照片文件失败: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // 如果照片文件创建成功，则设置拍照意图的输出路径并启动拍照
+        if (photoFile != null) {
+            // 获取照片文件的URI
+            Uri photoURI = FileProvider.getUriForFile(this,
+                    "com.thundersoft.trash.fileprovider",
+                    photoFile);
+            // 启动拍照意图
+            startActivityForResult(intent,2);
+        }
+
+
+
+
     }
 }

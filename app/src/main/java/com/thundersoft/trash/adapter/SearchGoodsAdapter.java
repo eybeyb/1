@@ -53,9 +53,7 @@ public class SearchGoodsAdapter extends RecyclerView.Adapter<SearchGoodsAdapter.
 
         // 设置分类类型
         String category = "未知分类";
-        if (item.getCategory() != null) {
-            category = item.getCategory();
-        } else if (item.getType() >= 0) {
+     if (item.getType() >= 0) {
             switch (item.getType()) {
                 case 0:
                     category = "可回收物";

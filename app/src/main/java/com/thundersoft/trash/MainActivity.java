@@ -85,6 +85,9 @@ String goods=null;
             @Override
             public void onFailure(okhttp3.Call call, IOException e) {
                 e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
