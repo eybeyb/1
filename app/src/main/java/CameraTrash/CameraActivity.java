@@ -32,26 +32,28 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import Common.defenddoudong;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class CameraActivity extends AppCompatActivity {
-    private Button bt,bt4;
+public class CameraActivity extends AppCompatActivity implements defenddoudong {
+    private Button bt, bt4;
     private ImageView imageView;
     private File currentPhotoFile; // 保存当前照片文件引用
     private ExecutorService executorService;
     RecyclerView recyclerView3;
     private SearchGoodsAdapter adapter;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         imageView = findViewById(R.id.imageView);
         bt = findViewById(R.id.button3);
-        bt4=findViewById(R.id.button4);
-        recyclerView3=findViewById(R.id.recyclerView3);
+        bt4 = findViewById(R.id.button4);
+        recyclerView3 = findViewById(R.id.recyclerView3);
         recyclerView3.setLayoutManager(new LinearLayoutManager(this));
         adapter = new SearchGoodsAdapter();
 
@@ -60,7 +62,9 @@ public class CameraActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dispatchTakePictureIntent();
+                if(isFastclick(0)){
+                    dispatchTakePictureIntent();
+                }
             }
         });
         bt4.setOnClickListener(new View.OnClickListener() {
@@ -125,8 +129,7 @@ public class CameraActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "照片文件不存在", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (requestCode == 2 && resultCode == RESULT_OK) {
+        } else if (requestCode == 2 && resultCode == RESULT_OK) {
             // 拍照成功，显示照片
             if (data != null && data.getData() != null) {
                 try {
@@ -134,15 +137,15 @@ public class CameraActivity extends AppCompatActivity {
                     File selectedImageFile = createImageFile();
 
                     // 将选中的图片复制到临时文件
-                try   (InputStream inputStream = getContentResolver().openInputStream(data.getData());
-                    FileOutputStream outputStream = new FileOutputStream(selectedImageFile)) {
+                    try (InputStream inputStream = getContentResolver().openInputStream(data.getData());
+                         FileOutputStream outputStream = new FileOutputStream(selectedImageFile)) {
 
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = inputStream.read(buffer)) > 0) {
-                        outputStream.write(buffer, 0, length);
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = inputStream.read(buffer)) > 0) {
+                            outputStream.write(buffer, 0, length);
+                        }
                     }
-                }
                     // 设置当前文件引用为选中的图片文件
                     currentPhotoFile = selectedImageFile;
                     // 显示照片
@@ -158,8 +161,7 @@ public class CameraActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }
-        else if (resultCode == RESULT_CANCELED) {
+        } else if (resultCode == RESULT_CANCELED) {
             // 用户取消拍照
             Toast.makeText(this, "操作已取消", Toast.LENGTH_SHORT).show();
         } else {
@@ -181,10 +183,10 @@ public class CameraActivity extends AppCompatActivity {
                     if (result != null) {
 
                         PhotoResponse photoResponse = new Gson().fromJson(result, PhotoResponse.class);
-                      if(photoResponse != null &&
-                              photoResponse.getResult() != null &&
-                              !photoResponse.getResult().isEmpty() &&
-                              photoResponse.getResult().get(0) != null){
+                        if (photoResponse != null &&
+                                photoResponse.getResult() != null &&
+                                !photoResponse.getResult().isEmpty() &&
+                                photoResponse.getResult().get(0) != null) {
                             // 获取识别到的第一个关键词
                             String keyword = photoResponse.getResult().get(0).getKeyword();
                             Log.d("关键词", "识别关键词: " + keyword);
@@ -194,13 +196,12 @@ public class CameraActivity extends AppCompatActivity {
                                 queryTrashClassification(keyword);
                                 Toast.makeText(CameraActivity.this, "识别到: " + keyword, Toast.LENGTH_SHORT).show();
                             });
-                    }
-                    else{
-                        runOnUiThread(() -> {
-                            Toast.makeText(CameraActivity.this, "未能识别图片内容,数据为空", Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                    }else {
+                        } else {
+                            runOnUiThread(() -> {
+                                Toast.makeText(CameraActivity.this, "未能识别图片内容,数据为空", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } else {
                         runOnUiThread(() -> {
                             Toast.makeText(CameraActivity.this, "图像识别失败", Toast.LENGTH_SHORT).show();
                         });
@@ -239,22 +240,22 @@ public class CameraActivity extends AppCompatActivity {
 
                         TrashResponse trashResponse = new Gson().fromJson(responseData, TrashResponse.class);
                         if (trashResponse.getCode() == 200 && trashResponse.getResult() != null) {
-                            if(!trashResponse.getResult().getList().isEmpty()){
-                            // 显示垃圾分类结果
-                            runOnUiThread(() -> {
+                            if (!trashResponse.getResult().getList().isEmpty()) {
+                                // 显示垃圾分类结果
+                                runOnUiThread(() -> {
 //                                String resultMsg = "垃圾名称: " + trashResponse.getResult().getList().get(0).getName() + "\n" +
 //                                        "分类: " + trashResponse.getResult().getList().get(0).getCategory() + "\n" +
 //                                        "解释: " + trashResponse.getResult().getList().get(0).getExplain();
 //                                Toast.makeText(CameraActivity.this, resultMsg, Toast.LENGTH_LONG).show();
-                                adapter.setDataList(trashResponse.getResult().getList());
-                                recyclerView3.setAdapter(adapter);
-                            });
-                        }
-                        else  {
-                            runOnUiThread(() -> {
-                                Toast.makeText(CameraActivity.this, "未找到相关垃圾分类信息,数据为空", Toast.LENGTH_SHORT).show();
-                            });
-                            }}else {
+                                    adapter.setDataList(trashResponse.getResult().getList());
+                                    recyclerView3.setAdapter(adapter);
+                                });
+                            } else {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(CameraActivity.this, "未找到相关垃圾分类信息,数据为空", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        } else {
                             runOnUiThread(() -> {
                                 Toast.makeText(CameraActivity.this, "未找到相关垃圾分类信息", Toast.LENGTH_SHORT).show();
                             });
@@ -293,7 +294,8 @@ public class CameraActivity extends AppCompatActivity {
             executorService.shutdown();
         }
     }
-    public void TransferPhoto(){
+
+    public void TransferPhoto() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         File photoFile = null;
         try {
@@ -312,11 +314,28 @@ public class CameraActivity extends AppCompatActivity {
                     "com.thundersoft.trash.fileprovider",
                     photoFile);
             // 启动拍照意图
-            startActivityForResult(intent,2);
+            startActivityForResult(intent, 2);
         }
+    }
 
+    @Override
+    public boolean isFastclick(int choice) {
+        boolean flag =true ;
+        long lastClickTime = 0;
+        switch (choice) {
+            case 0:
+                long curClickTime = System.currentTimeMillis();
+                if ((curClickTime - lastClickTime) >=1000) {
+                    flag = false;
+                }
+                lastClickTime = curClickTime;
+            case 1:
 
-
-
+                break;
+            default:
+                break;
+        }
+        return flag;
     }
 }
+

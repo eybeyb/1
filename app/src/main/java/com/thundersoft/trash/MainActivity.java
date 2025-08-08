@@ -27,10 +27,30 @@ import com.thundersoft.trash.databinding.ActivityMainBinding;
 import java.io.IOException;
 
 import CameraTrash.CameraActivity;
+import Common.defenddoudong;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements defenddoudong {
+    private long lastClickTime = 0;
+    @Override
+    public boolean isFastclick(int choice) {
+        boolean flag =true ;
+        switch (choice) {
+            case 0:
+                long curClickTime = System.currentTimeMillis();
+                if ((curClickTime - lastClickTime) >=5000) {
+                    flag = false;
+                }
+                lastClickTime = curClickTime;
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
+        return flag;
+    }
     private Handler handler = new Handler();
     private Runnable searchRunnable;
     private EditText et;
