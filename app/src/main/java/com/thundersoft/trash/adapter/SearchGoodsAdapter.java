@@ -1,5 +1,9 @@
 package com.thundersoft.trash.adapter;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
+import android.content.Intent;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.thundersoft.trash.Model.TrashResponse;
 import com.thundersoft.trash.R;
+import com.thundersoft.trash.TrashDetailActivity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +79,14 @@ public class SearchGoodsAdapter extends RecyclerView.Adapter<SearchGoodsAdapter.
             }
         }
         holder.typeTextView.setText("分类类型: " + category);
+     holder.itemView.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+             Intent intent = new Intent(v.getContext(), TrashDetailActivity.class);
+             intent.putExtra(TrashDetailActivity.EXTRA_TRASH_ITEM, item);
+           v.getContext().startActivity(intent);
+         }
+     });
     }
 
     @Override

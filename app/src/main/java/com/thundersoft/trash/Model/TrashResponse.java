@@ -1,5 +1,6 @@
 package com.thundersoft.trash.Model;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class TrashResponse {
@@ -43,7 +44,7 @@ public class TrashResponse {
         }
     }
 
-    public static class TrashItem {
+    public static class TrashItem implements Serializable {
         private String name;
         private int type;
         private int aipre;

@@ -33,7 +33,9 @@ import okhttp3.Request;
 
 public class MainActivity extends AppCompatActivity implements defenddoudong {
     private long lastClickTime = 0;
+    //
     @Override
+    // 防抖动
     public boolean isFastclick(int choice) {
         boolean flag =true ;
         switch (choice) {
@@ -85,7 +87,6 @@ String goods=null;
         et = binding.editTextText;
         bt = binding.button;
         ListenChangeText();
-
     }
 
     // 将TextWatcher定义为独立的内部类

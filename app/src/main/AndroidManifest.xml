@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- <-连接网络-> -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -14,7 +13,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -25,10 +23,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Trash">
-        <service
-            android:name="NetworkApi.NetworkService"
-            android:enabled="true"
-            android:exported="true"></service>
+        <activity
+            android:name=".TrashDetailActivity"
+            android:exported="false" />
 
         <activity
             android:name="CameraTrash.CameraActivity"
@@ -42,6 +39,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.thundersoft.trash.TrashDetailActivity"
+            android:exported="false"
+            tools:ignore="DuplicateActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.thundersoft.trash.fileprovider"
@@ -51,7 +53,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.llw.goodtrash.fileprovider"

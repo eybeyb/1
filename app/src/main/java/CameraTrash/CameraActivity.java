@@ -62,8 +62,11 @@ public class CameraActivity extends AppCompatActivity implements defenddoudong {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isFastclick(0)){
+                if(!isFastclick(0)){
                     dispatchTakePictureIntent();
+                }
+                else {
+                    Toast.makeText(CameraActivity.this, "请勿重复点击", Toast.LENGTH_SHORT).show();
                 }
             }
         });
