@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -28,11 +30,14 @@ import java.io.IOException;
 
 import CameraTrash.CameraActivity;
 import Common.defenddoudong;
+import Tools.LoadingImage;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 public class MainActivity extends AppCompatActivity implements defenddoudong {
     private long lastClickTime = 0;
+    private View loadingView;
+
     //
     @Override
     // 防抖动
@@ -56,12 +61,14 @@ public class MainActivity extends AppCompatActivity implements defenddoudong {
     private Handler handler = new Handler();
     private Runnable searchRunnable;
     private EditText et;
+
 private Button bt,camerabt;
 private TextView tv;
     private RecyclerView recyclerView;
     private SearchGoodsAdapter adapter;
 private ActivityMainBinding binding;
 String goods=null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,11 +80,12 @@ String goods=null;
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
 
+
         });
+        loadingView=findViewById(R.id.loading_view);
         camerabt=binding.button2 ;
         camerabt.setOnClickListener(v -> {
-            jumptoCameraActivity();
-
+                    jumptoCameraActivity();
             // 跳转到相机界面
         });
         recyclerView = binding.recyclerView2;
@@ -97,6 +105,7 @@ String goods=null;
     }
 
     public void getData(String goods){
+            loadingView.setVisibility(View.VISIBLE);
         //OKHttp连接网络访问api
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -105,6 +114,7 @@ String goods=null;
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(okhttp3.Call call, IOException e) {
+                loadingView.setVisibility(View.GONE);
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity.this, "请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -112,7 +122,12 @@ String goods=null;
             }
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                Log.d("MainActivity", "onResponse: " + response.code());
+
                 if (response.isSuccessful()) {
+                   runOnUiThread(() -> {
+                       loadingView.setVisibility(View.GONE);
+                   });
                     String responseData = response.body().string();
                     Log.d("MainActivity", responseData);//测试打印数据
                     try {
@@ -157,7 +172,8 @@ String goods=null;
 
   }
   public void jumptoCameraActivity(){
-      Intent intent = new Intent(MainActivity.this, CameraActivity.class);
-      startActivity(intent);
+          Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+          startActivity(intent);
+
   }
 }

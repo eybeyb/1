@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".TrashDetailActivity">
-
     <TextView
         android:id="@+id/textView1"
         android:layout_width="126dp"
@@ -19,8 +18,8 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="113dp"
-        android:layout_height="0dp"
+        android:layout_width="118dp"
+        android:layout_height="49dp"
         android:layout_marginTop="34dp"
         android:layout_marginEnd="44dp"
         android:layout_marginBottom="102dp"
@@ -60,4 +59,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.048661802" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

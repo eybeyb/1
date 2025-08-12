@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class CameraActivity extends AppCompatActivity implements defenddoudong {
     private ExecutorService executorService;
     RecyclerView recyclerView3;
     private SearchGoodsAdapter adapter;
+    private View loadingView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,7 +58,6 @@ public class CameraActivity extends AppCompatActivity implements defenddoudong {
         recyclerView3 = findViewById(R.id.recyclerView3);
         recyclerView3.setLayoutManager(new LinearLayoutManager(this));
         adapter = new SearchGoodsAdapter();
-
         executorService = Executors.newSingleThreadExecutor();
 
         bt.setOnClickListener(new View.OnClickListener() {
@@ -184,7 +185,6 @@ public class CameraActivity extends AppCompatActivity implements defenddoudong {
 
                     // 解析百度AI识别结果
                     if (result != null) {
-
                         PhotoResponse photoResponse = new Gson().fromJson(result, PhotoResponse.class);
                         if (photoResponse != null &&
                                 photoResponse.getResult() != null &&
